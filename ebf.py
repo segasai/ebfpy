@@ -334,7 +334,7 @@ class _EbfMap(object):
             if os.path.isfile(filename)==False:
                 raise RuntimeError('File not found:'+filename)    
                 
-            fp1 = file(filename, 'rb')
+            fp1 = open(filename, 'rb')
             fp1.seek(0, 2)
             filesize = fp1.tell()
             fp1.seek(0, 0)
@@ -399,7 +399,7 @@ class _EbfMap(object):
 
     @staticmethod
     def getCheckSum(filename):
-        fp1 = file(filename, 'rb')
+        fp1 = open(filename, 'rb')
         checksum=numpy.int64(0)
         data = fp1.read(1)
         if (data != ""):
@@ -424,7 +424,7 @@ class _EbfMap(object):
 
 #    @staticmethod
 #    def __put(filename,dataname,location):
-#        fp1 = file(filename, 'rb+')
+#        fp1 = open(filename, 'rb+')
 #        checksum=numpy.int64(0)
 #        data = fp1.read(1)
 #        if (data != ""):
@@ -1048,7 +1048,7 @@ class _EbfTable(object):
                                
 
         """ rename """
-        fp1 = file(self.filename, 'rb+')
+        fp1 = open(self.filename, 'rb+')
         fp1.seek(loc,0)        
         ebfh=_EbfHeader()
         ebfh.read(fp1)
@@ -1097,7 +1097,7 @@ class _EbfTable(object):
         self.ebfh=_EbfHeader()
         self.data=numpy.zeros(4,dtype='int64')
         self.dpos=-1
-        self.fp1 = file(self.filename, mode)        
+        self.fp1 = open(self.filename, mode)        
         if (self.fp1.closed == False):
             self.fp1.seek(0,0)
             self.ebfh.read(self.fp1)            
@@ -1288,7 +1288,7 @@ class _EbfTable(object):
         table = numpy.zeros(header['htcapacity'],dtype='int64')
         items = numpy.zeros(header['itemcapacity'],dtype=numpy.dtype(_EbfTable.itype))
         
-        fp1 = file(filename, 'rb+')
+        fp1 = open(filename, 'rb+')
         if(fp1.closed == True):
             raise RuntimeError('EBF error: cannot open file- '+filename);
         
@@ -1341,7 +1341,7 @@ class _EbfTable(object):
         fp1.close()
         
         if (offset1-offset) != ebfh2.capacity():
-            fp1 = file(filename, 'rb+')
+            fp1 = open(filename, 'rb+')
             temp=offset1-offset
             data1=numpy.zeros(1,temp,dtype='int8')
             ebfh2.setHeader('/.ebf/htable',data1,'','')
@@ -1356,7 +1356,7 @@ class _EbfTable(object):
     def init(filename):
         """create /.ebf/info and /.ebf/htable in an empty file"""
         """then add them to hash table and update checksum"""
-        fp1 = file(filename, 'wb')
+        fp1 = open(filename, 'wb')
         if (fp1.closed == True):
             raise RuntimeError('Ebf error: cannot open file- '+filename)
         else:                                            
@@ -1374,7 +1374,7 @@ class _EbfTable(object):
     def init_swap(filename):
         """create /.ebf/info and /.ebf/htable in an empty file"""
         """then add them to hash table and update checksum"""
-        fp1 = file(filename, 'wb')
+        fp1 = open(filename, 'wb')
         if (fp1.closed == True):
             raise RuntimeError('Ebf error: cannot open file- '+filename)
         else:                                            
@@ -1526,7 +1526,7 @@ class _EbfTable(object):
     @staticmethod
     def getKeyValsIT(filename):
         ebfh=_EbfHeader()
-        fp1 = file(filename, 'rb')
+        fp1 = open(filename, 'rb')
         if (fp1.closed == True):
             raise RuntimeError('Ebf error: cannot open file- '+filename)
         fp1.seek(0,2)
@@ -1610,7 +1610,7 @@ def rename(filename,oldkey,newkey):
             raise RuntimeError('EBF error: a key with given name already exists')
                         
         """ rename """
-        fp1 = file(filename, 'rb+')
+        fp1 = open(filename, 'rb+')
         fp1.seek(loc,0)        
         ebfh=_EbfHeader()
         ebfh.read(fp1)
@@ -1647,7 +1647,7 @@ def unit(filename, dataname):
     if location < 0:
         raise RuntimeError("Ebf error: Data object "+dataname+" not found")
     if location >= 0:
-        fp1 = file(filename, 'rb')
+        fp1 = open(filename, 'rb')
         header = _EbfHeader()
         fp1.seek(location, 0)
         header.read(fp1)
@@ -1682,7 +1682,7 @@ def getHeader(filename, dataname):
     if location < 0:
         raise RuntimeError("Ebf error: Data object "+dataname+" not found")
     if location >= 0:
-        fp1 = file(filename, 'rb')
+        fp1 = open(filename, 'rb')
         header = _EbfHeader()
         fp1.seek(location, 0)
         header.read(fp1)
@@ -2070,7 +2070,7 @@ def read(filename, path = '/' ,recon=0,ckon=1,begin=0,end=None):
     if (path.endswith('/') == 0):
         location=_EbfTable.get(filename, path.lower())
         if location >= 0:
-            fp1 = file(filename, 'rb')
+            fp1 = open(filename, 'rb')
             fp1.seek(location, 0)        
     
             header = _EbfHeader()
@@ -2268,7 +2268,7 @@ def write(filename, tagname, data, mode, dataunit = ""):
         else:    
             header.create(tagname, data, dataunit, "")
 
-        fp1  =  file(filename, mode1)
+        fp1  =  open(filename, mode1)
         if mode == 'u' :
             if location >= 0 :
                 fp1.seek(location, 0)            
@@ -2405,7 +2405,7 @@ def npstruct2dict(data):
 
 #def islast(filename,tagname):
 #    location=_EbfTable.get(filename, tagname.lower())
-#    fp1  =  file(filename, mode1)
+#    fp1  =  open(filename, mode1)
 #    fp1.seek(location, 0)            
 #    header1 = _EbfHeader()
 #    header1.read(fp1)
@@ -2630,7 +2630,7 @@ class EbfFile():
                 
     def _read_init(self):
         if self.location >= 0:
-            self.fp = file(self.filename, 'rb')
+            self.fp = open(self.filename, 'rb')
             self.fp.seek(self.location, 0)            
             self.header = _EbfHeader()
             self.header.read(self.fp)
@@ -2670,7 +2670,7 @@ class EbfFile():
         
     def _write_init(self):
         if self.location < 0:
-            self.fp = file(self.filename, 'rb+')
+            self.fp = open(self.filename, 'rb+')
             self.fp.seek(0, 2)
             self.location=self.fp.tell()            
             
@@ -2811,7 +2811,7 @@ def info(filename,option=0):
 
     """
 
-    fp1 = file(filename, 'rb')
+    fp1 = open(filename, 'rb')
     fp1.seek(0,2)
     filesize = fp1.tell()
     fp1.seek(0,0)
@@ -2856,7 +2856,7 @@ def check(filename):
 
     """
 
-    fp1 = file(filename, 'rb')
+    fp1 = open(filename, 'rb')
     fp1.seek(0,2)
     filesize = fp1.tell()
     fp1.seek(0,0)
@@ -3114,7 +3114,7 @@ def swapEndian(filename):
     
     filename_out = filename.rpartition('.ebf')[0]+'_swap.ebf'
 
-    fp1 = file(filename, 'rb')
+    fp1 = open(filename, 'rb')
     fp1.seek(0,2)
     filesize=fp1.tell()
     fp1.seek(0,0)
@@ -3129,7 +3129,7 @@ def swapEndian(filename):
         flagswap=0
         _EbfTable.init(filename_out)
                 
-    fout = file(filename_out, 'rb+')
+    fout = open(filename_out, 'rb+')
     fout.seek(0,2)
     keys=[]
     values=[]
@@ -3823,7 +3823,7 @@ class _ebf_test(unittest.TestCase):
             
             
         
-        fout = file("check.ebf", "wb")
+        fout = open("check.ebf", "wb")
         fout.close()
         write("check.ebf", "/", data, "w")
         write("check.ebf", "/struct1/data2", data2, "a")
@@ -3973,7 +3973,7 @@ class _ebf_test(unittest.TestCase):
         
         
         
-        fout = file("check.ebf", "wb")
+        fout = open("check.ebf", "wb")
         fout.close()
         write("check.ebf", "/", data, "w")
         write("check.ebf", "/dir1/struct", data2, "a")
