@@ -1,0 +1,35 @@
+Metadata-Version: 1.1
+Name: ebfpy
+Version: 0.0.14
+Summary: a module to read and write .ebf files (efficient and easy to use binary format)
+Home-page: UNKNOWN
+Author: Sanjib Sharma
+Author-email: bugsanjib@gmail.com
+License: UNKNOWN
+Description: Python module for reading and writing .ebf files
+        ---------------------------------------------
+        EBF is a binary format for storing data. It is designed to   
+        read and write data, easily and efficiently. 
+        - Store multiple data items in one file, each having a unique tag name
+          + tagnames follow the convention of unix style pathname e.g. /x or /mydata/x
+        - Automatic type and endian conversion  
+        - Support for multiple programming languages
+          + data can easily read in C, C++, Fortran, Java, IDL and Matlab
+          + facilitates easy distribution of data 
+        - Comprehensive numpy support
+          + data is read back as numpy arrays
+          + almost any numpy array can be written
+          + Nested numpy structures are also supported
+        - Read and write directly a recursive dictionary of numpy arrays
+        - Internally uses hashtable for fast retireival of data items. 
+          + also allows for overwrite prevention
+        
+Platform: any
+Classifier: Programming Language :: Python
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Scientific/Engineering
