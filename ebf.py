@@ -240,7 +240,7 @@ class _EbfUtils(object):
                 node['files'].append(path1)
             else:
                 x=path1.split('/',1)
-                if not (node['dirs'].has_key(x[0]+'/')):
+                if not (x[0]+'/' in node['dirs']):
                     node['dirs'][x[0]+'/']=_EbfUtils.createPathNode(node['name']+x[0]+'/')
                 _EbfUtils.addPathToTree(node['dirs'][x[0]+'/'],[x[1]])    
                 
@@ -250,11 +250,11 @@ class _EbfUtils(object):
         print the tree
         """
         if node['name'] != "":
-            print 'ls ',node['name']
-            print  node['files']
-            print  node['dirs'].keys()
-            print 
-            for x in node['dirs'].keys():
+            print('ls ',node['name'])
+            print(node['files'])
+            print(list(node['dirs'].keys()))
+            print() 
+            for x in list(node['dirs'].keys()):
                 _EbfUtils.printPathTree(node['dirs'][x])
     
     @staticmethod
@@ -262,7 +262,7 @@ class _EbfUtils(object):
         if node['name'] == dataname :
             return node
         else:
-            for key in node['dirs'].keys():
+            for key in list(node['dirs'].keys()):
                 nodef=_EbfUtils.searchPathTree(node['dirs'][key],dataname)
                 if nodef['name'] == dataname:
                     return nodef        
@@ -276,7 +276,7 @@ class _EbfUtils(object):
         keys=[]
         for key in node['files']:
             keys.append(node['name']+key)
-        for x in node['dirs'].keys():
+        for x in list(node['dirs'].keys()):
             keys=keys+_EbfUtils.getKeysRecursive(node['dirs'][x])
         return keys
 
@@ -317,14 +317,14 @@ class _EbfMap(object):
     ltable={}
     @staticmethod
     def printout():
-        print _EbfMap.ltable
+        print(_EbfMap.ltable)
         
     @staticmethod
     def __loadMap(filename):
         """
         load the location table
         """
-        if _EbfMap.ltable.has_key(filename):
+        if filename in _EbfMap.ltable:
             del _EbfMap.ltable[filename]
         _EbfMap.ltable[filename] = {}
             
@@ -352,7 +352,7 @@ class _EbfMap(object):
                 raise RuntimeError('EBFCorrupt')    
             else:
                 fp1.close()
-            key_list=_EbfMap.ltable[filename].keys()
+            key_list=list(_EbfMap.ltable[filename].keys())
             _EbfMap.ltable[filename]['pathtree']=_EbfUtils.createPathNode('')
             _EbfUtils.addPathToTree(_EbfMap.ltable[filename]['pathtree'],key_list)    
             _EbfMap.ltable[filename]['checksum'] = _EbfMap.getCheckSum(filename)
@@ -367,12 +367,12 @@ class _EbfMap(object):
         check if a data object exists in a file
         loads file into map if it does not exist
         """
-        if _EbfMap.ltable.has_key(filename) == 0 :
+        if (filename in _EbfMap.ltable) == 0 :
             _EbfMap.__loadMap(filename)
         if _EbfMap.ltable[filename]['checksum'] != _EbfMap.getCheckSum(filename):
             _EbfMap.__loadMap(filename)
                 
-        keys1=_EbfMap.ltable[filename].keys()
+        keys1=list(_EbfMap.ltable[filename].keys())
         if (keys1.count('checksum') > 0):   
             keys1.remove('checksum')
         if (keys1.count('pathtree') > 0):   
@@ -386,13 +386,13 @@ class _EbfMap(object):
         """
         get the location of the data object
         """
-        if _EbfMap.ltable.has_key(filename) == 0 :
+        if (filename in _EbfMap.ltable) == 0 :
             _EbfMap.__loadMap(filename)
         elif option == 1:    
             if _EbfMap.ltable[filename]['checksum'] != _EbfMap.getCheckSum(filename):
                 _EbfMap.__loadMap(filename)
 
-        if _EbfMap.ltable[filename].has_key(dataname):
+        if dataname in _EbfMap.ltable[filename]:
             return _EbfMap.ltable[filename][dataname]
         else:
             return -1
@@ -458,7 +458,7 @@ class _TypeManager(object):
     typedictl = {}
     typelists = ['', 'S1', 'i4', 'i8', 'f4', 'f8', 'i2', '', 'V', 'i1', 'u1', 'u2', 'u4', 'u8']
     typelistl = ['', 'char', 'int32', 'int64', 'float32', 'float64', 'int16', '', 'struct', 'int8', 'uint8', 'uint16', 'uint32', 'uint64']
-    for i in xrange(len(typelistl)):
+    for i in range(len(typelistl)):
         if(typelists[i] != ''):
             typedicts[typelists[i]] = i               
             typedictl[typelistl[i]] = i
@@ -468,12 +468,12 @@ class _TypeManager(object):
         """
         python type string to ebf type code    
         """
-        if _TypeManager.typedicts.has_key(typename):
+        if typename in _TypeManager.typedicts:
             return _TypeManager.typedicts[typename]                               
-        if _TypeManager.typedictl.has_key(typename):
+        if typename in _TypeManager.typedictl:
             return _TypeManager.typedictl[typename]
         else:
-            print 'datatype=',typename
+            print('datatype=',typename)
             raise RuntimeError("Ebf error: unrecognized data type ")
 
     @staticmethod        
@@ -481,9 +481,9 @@ class _TypeManager(object):
         """
         check if if type string is a valid supported type by ebf    
         """
-        if _TypeManager.typedicts.has_key(typename):
+        if typename in _TypeManager.typedicts:
             return True                               
-        if _TypeManager.typedictl.has_key(typename):
+        if typename in _TypeManager.typedictl:
             return True
         return False
         
@@ -1410,7 +1410,7 @@ class _EbfTable(object):
             for key1 in key:
                 temp=fileht.__getfromfp(key1)                                        
                 if temp >= 0:
-                    print filename,":",key1," already present hence exiting put"
+                    print(filename,":",key1," already present hence exiting put")
                     fileht.ecode = 10
                
             if (fileht.ecode == 0):                                                                                                         
@@ -1490,9 +1490,9 @@ class _EbfTable(object):
 
                     if k > 1:
                         l=l+1
-            print 'total',j*1.0/(fileht.header['htcapacity']),l*1.0/(fileht.header['itemcapacity'])
+            print('total',j*1.0/(fileht.header['htcapacity']),l*1.0/(fileht.header['itemcapacity']))
         else:
-            print 'Ebf: error in dispaly(), ecode!=0'
+            print('Ebf: error in dispaly(), ecode!=0')
                 
         fileht.close()
         
@@ -1503,25 +1503,25 @@ class _EbfTable(object):
         get the location of the data object
         """
         fileht=_EbfTable(filename,'rb')
-        print "{0:<24s}{1:s}".format("filename:",filename)
-        print "\t {0:>24s}{1:<}".format("ecode=",fileht.ecode)
-        print "\t {0:>24s}{1:<}".format("hecode=",fileht.hecode)
-        print "\t {0:>24s}{1:<}".format("info_flagswap=",fileht.ebfh.flagswap)
-        print "\t {0:>24s}{1:<}".format("flagswap=",fileht.flagswap)
-        print "\t {0:>24s}{1:<24}{2:<24}{3:<24}".format("/.ebf/info=",fileht.data[0],fileht.data[1],fileht.data[2])
+        print("{0:<24s}{1:s}".format("filename:",filename))
+        print("\t {0:>24s}{1:<}".format("ecode=",fileht.ecode))
+        print("\t {0:>24s}{1:<}".format("hecode=",fileht.hecode))
+        print("\t {0:>24s}{1:<}".format("info_flagswap=",fileht.ebfh.flagswap))
+        print("\t {0:>24s}{1:<}".format("flagswap=",fileht.flagswap))
+        print("\t {0:>24s}{1:<24}{2:<24}{3:<24}".format("/.ebf/info=",fileht.data[0],fileht.data[1],fileht.data[2]))
         if fileht.ecode == 0:
-            print 'header:'
-            print "\t {0:>24s}{1:<}".format("count=",fileht.header['current'])
-            print "\t {0:>24s}{1:<}".format("htcapapcity=",fileht.header['htcapacity'])
-            print "\t {0:>24s}{1:<}".format("itemcapapcity=",fileht.header['itemcapacity'])
-            print "\t {0:>24s}{1:<}".format("keycapapcity=",fileht.header['keycapacity'])
-            print "\t {0:>24s}{1:<}".format("keyposcur=",fileht.header['keyposcur'])
+            print('header:')
+            print("\t {0:>24s}{1:<}".format("count=",fileht.header['current']))
+            print("\t {0:>24s}{1:<}".format("htcapapcity=",fileht.header['htcapacity']))
+            print("\t {0:>24s}{1:<}".format("itemcapapcity=",fileht.header['itemcapacity']))
+            print("\t {0:>24s}{1:<}".format("keycapapcity=",fileht.header['keycapacity']))
+            print("\t {0:>24s}{1:<}".format("keyposcur=",fileht.header['keyposcur']))
         fileht.close()
         
         [keys,values]=_EbfTable.getKeyVals(filename)
-        print 'Key Value List:  nsize=',len(keys)
+        print('Key Value List:  nsize=',len(keys))
         for key1,value1 in zip(keys,values):
-            print '{0:>24s}{1:4s}{2:<}'.format(key1,' -> ',value1)
+            print('{0:>24s}{1:4s}{2:<}'.format(key1,' -> ',value1))
     
     @staticmethod
     def getKeyValsIT(filename):
@@ -1972,7 +1972,7 @@ def __sdef2descrv1(wl, ic=0):
         name=wl[i+1]
         rank=int(wl[i+2])
         dims=[]
-        for j in xrange(0,rank):
+        for j in range(0,rank):
             dims.append(int(wl[i+3+j]))
         i=i+3+rank
         if (datatype == 'S1'):
@@ -2099,7 +2099,7 @@ def read(filename, path = '/' ,recon=0,ckon=1,begin=0,end=None):
                 if begin1 < 0:
                     begin1=0
                 if end1 < begin1:
-                    print 'ebf Warning, begin>end'
+                    print('ebf Warning, begin>end')
                     end1=begin1
                 if begin1 > 0:
                     fp1.seek(begin1*header.datasize*header.elements()/header.dim[0],1) 
@@ -2142,16 +2142,16 @@ def read(filename, path = '/' ,recon=0,ckon=1,begin=0,end=None):
                         mydict[key] = read(filename,node['name']+key,recon,0)
             if (recon > 0)&(len(node['dirs']) > 0):
                 if recon == 2:
-                    for key in node['dirs'].keys():
+                    for key in list(node['dirs'].keys()):
                         mydict[key.strip('/')] = read(filename,node['name']+key,recon,0)                                    
                 if recon == 1:
-                    for key in node['dirs'].keys():
+                    for key in list(node['dirs'].keys()):
                         if (key.startswith('.ebf/') == False)and(key.startswith('.tr/') == False):
                             mydict[key.strip('/')] = read(filename,node['name']+key,recon,0)                                    
         
         
     if len(mydict) == 0:
-        print filename+":"+path
+        print(filename+":"+path)
         raise RuntimeError("Ebf error from read(): requested object not found- ")
 
     return mydict
@@ -2206,7 +2206,7 @@ def write(filename, tagname, data, mode, dataunit = ""):
     if tagname.endswith('/'):
         if type(data) is dict:
             
-            mykeys=data.keys()
+            mykeys=list(data.keys())
             if type(dataunit) == str:
                 dataunitl=[]
                 for name in mykeys:
@@ -2219,7 +2219,7 @@ def write(filename, tagname, data, mode, dataunit = ""):
                 raise RuntimeError('Ebf Error: length of dataunit list must match length of data dict')            
             i=0    
             
-            for name in data.keys():
+            for name in list(data.keys()):
                 if (type(data[name]) is dict)|(type(data[name]) is numpy.void):
                     write(filename, tagname+name+'/', data[name], mode, dataunitl[i])
                 else:
@@ -2255,7 +2255,7 @@ def write(filename, tagname, data, mode, dataunit = ""):
                 raise RuntimeError('size of ndarray must be at least one')
 
         else: 
-            print type(data), tagname
+            print(type(data), tagname)
             raise RuntimeError('with path ending with /, data.dtype.char should be V i.e., structure. Here '+data.dtype.char)
                    
                                          
@@ -2342,7 +2342,7 @@ def join(files,path,outfile,outpath,mode):
     if mode == 'w':
         initialize(outfile)
         mode='a'
-    for key in data0.keys():
+    for key in list(data0.keys()):
         if containsKey(outfile,outpath+key) == 0:
             dataunit=unit(files[0],path+key)
             efile=EbfFile(outfile,outpath+key,mode,dataunit)
@@ -2351,7 +2351,7 @@ def join(files,path,outfile,outpath,mode):
                 efile.write(data)
             efile.close()
         else:
-            print("item="+outpath+key+" already present. Hence, skipping")
+            print(("item="+outpath+key+" already present. Hence, skipping"))
 
 
 
@@ -2369,7 +2369,7 @@ def dict2npstruct(data,basekey=None,keylist=None):
 
     """
     if keylist is None:
-        keylist=data.keys()
+        keylist=list(data.keys())
     if basekey is None:
         nsize=data[keylist[0]].size
     else:
@@ -2530,7 +2530,7 @@ def update_ind(filename,dataname,data,ind=None):
             if numpy.max(ind) >= nsize:
                 raise RuntimeError('EbfError: index supplied is out of bound with data on file')
             if ind.size*rest != data.size:
-                print ind.size,data.size,rest
+                print(ind.size,data.size,rest)
                 raise RuntimeError('EbfError: size of data not equal to size of ind')
             if rest != data[0].size:
                 raise RuntimeError('EbfError: shape of data does not match')
@@ -2617,7 +2617,7 @@ class EbfFile():
             _EbfTable.init(filename)
             self.mode='a'
         if (self.mode != 'a')&(self.mode != 'r'):
-            print 'mode=',self.mode
+            print('mode=',self.mode)
             raise RuntimeError("mode must be 'r' , 'w' or 'a' ")
 
             
@@ -2815,10 +2815,10 @@ def info(filename,option=0):
     fp1.seek(0,2)
     filesize = fp1.tell()
     fp1.seek(0,0)
-    print filename, filesize, 'bytes ' 
-    print '------------------------------------------------------------------'
-    print "{0:30s} {1:8s} {2:7s} {3:10s} {4:10s}".format('name', 'dtype', 'endian', 'unit', 'dim')
-    print '------------------------------------------------------------------'
+    print(filename, filesize, 'bytes ') 
+    print('------------------------------------------------------------------')
+    print("{0:30s} {1:8s} {2:7s} {3:10s} {4:10s}".format('name', 'dtype', 'endian', 'unit', 'dim'))
+    print('------------------------------------------------------------------')
     header = _EbfHeader()
     while fp1.tell() < filesize:
         header.read(fp1)
@@ -2829,12 +2829,12 @@ def info(filename,option=0):
             else:
                 en = 'little' 
     
-        print "{0:30s} {1:8s} {2:7s} {3:10s} {4:10s}".format(header.name, _TypeManager.itos_l(header.datatype), en, header.dataunit, str(header.dim))
+        print("{0:30s} {1:8s} {2:7s} {3:10s} {4:10s}".format(header.name, _TypeManager.itos_l(header.datatype), en, header.dataunit, str(header.dim)))
         fp1.seek(header.capacity(), 1)
             
         if (option == 1) and (header.datatype == 8):
-            print "structure definition:"    
-            print header.sdef    
+            print("structure definition:")    
+            print(header.sdef)    
         
     if fp1.tell() != filesize:
         raise RuntimeError('EBFCorrupt')    
@@ -2920,12 +2920,12 @@ def stat(filename, tagname,recon=0):
             raise RuntimeError('EBF Error: in stat(), key not present in input file')
             
                     
-    print "{0:15s} {1:>10s} {2:>12s} {3:>12s} {4:>12s} {5:>12s}".format("name","items", "min", "max", "mean", "stddev")
+    print("{0:15s} {1:>10s} {2:>12s} {3:>12s} {4:>12s} {5:>12s}".format("name","items", "min", "max", "mean", "stddev"))
     for dataname in keys:
         data=read(filename,dataname)
         if data.dtype.type != numpy.string_:
             data=numpy.float64(read(filename,dataname))
-            print "{0:15s} {1:10d} {2:12.4f} {3:12.4f} {4:12.4f} {5:12.4f}".format(dataname, data.size, (numpy.min(data)), (numpy.max(data)), numpy.mean(data), numpy.std(data))
+            print("{0:15s} {1:10d} {2:12.4f} {3:12.4f} {4:12.4f} {5:12.4f}".format(dataname, data.size, (numpy.min(data)), (numpy.max(data)), numpy.mean(data), numpy.std(data)))
     
 def cat(filename, tagname,delimiter=' ',tableon=0):
     """
@@ -2963,7 +2963,7 @@ def cat(filename, tagname,delimiter=' ',tableon=0):
         for key in keys:
             datat=read(filename,key,0,0)
             if type(datat) == dict:
-                for key1 in datat.keys():
+                for key1 in list(datat.keys()):
                     if datat[key1].ndim == 2:
                         for j in numpy.arange(0,datat[key1].shape[1]):
                             data[key1+"_"+str(i)]=datat[key1][:,j]
@@ -2987,7 +2987,7 @@ def cat(filename, tagname,delimiter=' ',tableon=0):
                 skeys.append(str.rpartition(key,'/')[2])
                 i=i+1
         
-        for key in data.keys():
+        for key in list(data.keys()):
             if data[key].dtype.kind == 'V':
                 for key2 in data[key].dtype.names:
                     data[key2]=data[key][key2]
@@ -3013,10 +3013,10 @@ def cat(filename, tagname,delimiter=' ',tableon=0):
                 formatstring.append("{0:>25}")
                 formatstringh.append("{0:>25}")
 
-        print delimiter.join(formatstringh[j].format(key) for j,key in enumerate(skeys))
+        print(delimiter.join(formatstringh[j].format(key) for j,key in enumerate(skeys)))
         elements=min([data[key].size if data[key].ndim<2 else data[key].shape[0] for key in skeys])
         for i in numpy.arange(0,elements):
-            print delimiter.join(formatstring[j].format(data[key][i]) for j,key in enumerate(skeys))
+            print(delimiter.join(formatstring[j].format(data[key][i]) for j,key in enumerate(skeys)))
 
         
 #        width=0
@@ -3054,7 +3054,7 @@ def cat(filename, tagname,delimiter=' ',tableon=0):
         for key in keys:
             datat=read(filename,key,0,0)
             if type(datat) == dict:
-                for key1 in datat.keys():
+                for key1 in list(datat.keys()):
                     width=8
                     while width < len(key1):
                         width=width*2
@@ -3066,7 +3066,7 @@ def cat(filename, tagname,delimiter=' ',tableon=0):
                         datat1=numpy.array_str(numpy.squeeze(datat[key1]))                    
                     if len(temp)+len(datat1) > 64:
                         temp=temp+'\n'
-                    print temp+datat1
+                    print(temp+datat1)
             else:
                 width=8
                 while width < len(key):
@@ -3081,17 +3081,17 @@ def cat(filename, tagname,delimiter=' ',tableon=0):
                     datalen=datat.size
                 if len(temp)+datalen > 64:
                     if len(keys) > 1:
-                        print temp
-                    print "["
+                        print(temp)
+                    print("[")
                     for d in datat:
-                        print d
-                    print "]"
+                        print(d)
+                    print("]")
                                         
                 else:
                     if len(keys) > 1:
-                        print temp,datat
+                        print(temp,datat)
                     else:
-                        print datat
+                        print(datat)
     
     numpy.set_printoptions()    
     
@@ -3246,20 +3246,20 @@ def copy(filename1,filename2,mode='a',tagnames='',outpath=None):
 
 
 def _checkSpeed():
-    print 'Test speed read and write-->'
+    print('Test speed read and write-->')
     
         
     start=time.time()    
     nsize=1000
     data1 = numpy.zeros(2, dtype = 'int32')+1
-    print '\n item read/write speed: in Kilo operations per second KOPS:'
-    print  'size of each item',data1.size
-    print  'Number of items',nsize
+    print('\n item read/write speed: in Kilo operations per second KOPS:')
+    print('size of each item',data1.size)
+    print('Number of items',nsize)
     
     write('check.ebf', '/x0', data1, 'w')    
     for i in numpy.arange(1, nsize):
         write('check.ebf', '/x'+str(i), data1, 'a')
-    print '\t Writing speed=', nsize*1e-3/(time.time()-start), ' Kops (' , (time.time()-start),' s)'
+    print('\t Writing speed=', nsize*1e-3/(time.time()-start), ' Kops (' , (time.time()-start),' s)')
 #    info('test12.ebf')
 
     start=time.time()    
@@ -3268,36 +3268,36 @@ def _checkSpeed():
         y = read('check.ebf', '/x'+str(i))
 #        print y[0]
 #        tot = y[0]+1
-    print '\t Reading speed=', nsize*1e-3/(time.time()-start), ' Kops (',(time.time()-start),' s)'
+    print('\t Reading speed=', nsize*1e-3/(time.time()-start), ' Kops (',(time.time()-start),' s)')
 
     
-    print '\n get key list:'
+    print('\n get key list:')
     start = time.time()    
     keys=_EbfTable.getKeyVals('check.ebf')[0]
-    print '\t Reading speed Key vals HT=', nsize*1e-3/(time.time()-start), ' Kops (' ,(time.time()-start),'s) ',' keys=',len(keys)
+    print('\t Reading speed Key vals HT=', nsize*1e-3/(time.time()-start), ' Kops (' ,(time.time()-start),'s) ',' keys=',len(keys))
     
     start = time.time()    
     keys=_EbfTable.getKeyValsIT('check.ebf')[0]
-    print '\t Reading speed Key vals IT =', nsize*1e-3/(time.time()-start), ' Kops (' ,(time.time()-start),' s) ',' keys=',len(keys)
+    print('\t Reading speed Key vals IT =', nsize*1e-3/(time.time()-start), ' Kops (' ,(time.time()-start),' s) ',' keys=',len(keys))
 
 
 
-    print '\n data read/write speed: in MB/s:'
+    print('\n data read/write speed: in MB/s:')
     nsize = [10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000]
     nsize = [10000000]
     for j in nsize:
-        print j, 10
+        print(j, 10)
         data1 = numpy.zeros(j, dtype = 'int32')
         start = time.time()    
         for i in numpy.arange(1, 10):
             write('check.ebf', '/x1', data1, 'w')
-        print '\t Writing speed=', data1.size*data1.itemsize*1e-6*10/(time.time()-start), ' MB/s (', (time.time()-start),' s)'
+        print('\t Writing speed=', data1.size*data1.itemsize*1e-6*10/(time.time()-start), ' MB/s (', (time.time()-start),' s)')
 
 
         start = time.time()    
         for i in numpy.arange(1, 10):
             y = read('check.ebf', '/x1')
-        print '\t Reading speed=', data1.size*data1.itemsize*1e-6*10/(time.time()-start), ' MB/s (', (time.time()-start),' s)'
+        print('\t Reading speed=', data1.size*data1.itemsize*1e-6*10/(time.time()-start), ' MB/s (', (time.time()-start),' s)')
 
 
 def diff(filename1,filename2):
@@ -3330,7 +3330,7 @@ def diff(filename1,filename2):
             keys2.append(key)
             
     if len(keys1) != len(keys2):
-        print 'files differ: unequal number of data itmes, ', len(keys1),' and ',len(keys2)
+        print('files differ: unequal number of data itmes, ', len(keys1),' and ',len(keys2))
             
     count_differ=0
     count_match=0
@@ -3339,15 +3339,15 @@ def diff(filename1,filename2):
             data1=read(filename1,key).tostring() 
             data2=read(filename2,key).tostring()
             if data1 != data2:
-                print 'data item->',key,' differs'
+                print('data item->',key,' differs')
                 count_differ=count_differ+1
             else:
                 count_match=count_match+1
         else:
-            print 'data item->',key,' not present in second file'
+            print('data item->',key,' not present in second file')
     
     if count_match != len(keys1):
-        print len(keys1)-count_match,' data items differ out of',len(keys1), 'items in first file'
+        print(len(keys1)-count_match,' data items differ out of',len(keys1), 'items in first file')
         
     
     
@@ -3367,48 +3367,48 @@ def _usage():
 #        print '     ebftkpy -swap filename'
 #        print 'To check speed of input output'
 #        print '     ebftkpy -speed filename'        
-        print "NAME:"
-        print '\t >>EBF<<  (Efficient and Easy to use Binary File Format)'
-        print "\t ebftkpy 0.0.1 - a toolkit for  EBF  files"
-        print "\t Copyright (c) 2012 Sanjib Sharma "
-        print "USAGE:"
-        print "\t ebftkpy\t -list filename"
-        print "\t ebftkpy\t  filename  (same as -list)"
-        print "\t ebftkpy\t -cat filename \"TagName1 TagName2 ..\""
-        print "\t ebftkpy\t -csv filename \"TagName1 TagName2 ..\""
-        print "\t ebftkpy\t -ssv filename \"TagName1 TagName2 ..\""
-        print "\t ebftkpy\t -stat filename \"TagName1 TagName2 ..\""
-        print "\t ebftkpy\t -swap filename"
-        print "\t ebftkpy\t -copy src_file dest_file"
-        print "\t ebftkpy\t -copy src_file dest_file TagName"
-        print "\t ebftkpy\t -diff  filename1 filename2"
-        print "\t ebftkpy\t -rename  filename1 tagname_old tagname_new"
-        print "\t ebftkpy\t -remove  filename1 tagname"
-        print "\t ebftkpy\t -htab filename"
-        print "DESCRIPTION:"
-        print "\t -list    ","view headers/TagNames of data in file "    
-        print "\t -cat     ","print data in ascii format"
-        print "\t          ","e.g., for \"TagName1\" a record of rank 2 with"
-        print "\t          ","dimensions N and 3 will print a Nx3 table,"
-        print "\t          ","for \"TagName2\" a record of rank 1 with dimension N"
-        print "\t          ","will print a column of size N"
-        print "\t          ","multiple tags can be specified as space separated "
-        print "\t          ","strings as \"TagName1 TagName2\"  "
-        print "\t          ","but the condition is that the number of elements in"
-        print "\t          ","each record should be same. This will print a Nx4 table"
-        print "\t -csv     ","print data in csv tabular format, syntax same as cat"
-        print "\t -ssv     ","print data in csv tabular format, but delimitier as space"
-        print "\t -stat    ","print min max mean stddev of specified data tags"
-        print "\t -swap    ","swap the endianness of a file, output file has" 
-        print "\t          ","suffix _swap.ebf"
-        print "\t -copy    ","copy contents of one file to another or only a tag"
-        print "\t -diff    ","difference of two data items in two ebf files"
-        print "\t -rename  ","rename a data item"
-        print "\t -remove  ","remove a data item. It is renamed with prefix /.tr/ "
-        print "\t          ","which can be restored using rename if needed"
-        print "\t -htab    ","get information about internal hashtable"
-        print "CONTACT:"
-        print "http://ebfformat.sourceforge.net"
+        print("NAME:")
+        print('\t >>EBF<<  (Efficient and Easy to use Binary File Format)')
+        print("\t ebftkpy 0.0.1 - a toolkit for  EBF  files")
+        print("\t Copyright (c) 2012 Sanjib Sharma ")
+        print("USAGE:")
+        print("\t ebftkpy\t -list filename")
+        print("\t ebftkpy\t  filename  (same as -list)")
+        print("\t ebftkpy\t -cat filename \"TagName1 TagName2 ..\"")
+        print("\t ebftkpy\t -csv filename \"TagName1 TagName2 ..\"")
+        print("\t ebftkpy\t -ssv filename \"TagName1 TagName2 ..\"")
+        print("\t ebftkpy\t -stat filename \"TagName1 TagName2 ..\"")
+        print("\t ebftkpy\t -swap filename")
+        print("\t ebftkpy\t -copy src_file dest_file")
+        print("\t ebftkpy\t -copy src_file dest_file TagName")
+        print("\t ebftkpy\t -diff  filename1 filename2")
+        print("\t ebftkpy\t -rename  filename1 tagname_old tagname_new")
+        print("\t ebftkpy\t -remove  filename1 tagname")
+        print("\t ebftkpy\t -htab filename")
+        print("DESCRIPTION:")
+        print("\t -list    ","view headers/TagNames of data in file ")    
+        print("\t -cat     ","print data in ascii format")
+        print("\t          ","e.g., for \"TagName1\" a record of rank 2 with")
+        print("\t          ","dimensions N and 3 will print a Nx3 table,")
+        print("\t          ","for \"TagName2\" a record of rank 1 with dimension N")
+        print("\t          ","will print a column of size N")
+        print("\t          ","multiple tags can be specified as space separated ")
+        print("\t          ","strings as \"TagName1 TagName2\"  ")
+        print("\t          ","but the condition is that the number of elements in")
+        print("\t          ","each record should be same. This will print a Nx4 table")
+        print("\t -csv     ","print data in csv tabular format, syntax same as cat")
+        print("\t -ssv     ","print data in csv tabular format, but delimitier as space")
+        print("\t -stat    ","print min max mean stddev of specified data tags")
+        print("\t -swap    ","swap the endianness of a file, output file has") 
+        print("\t          ","suffix _swap.ebf")
+        print("\t -copy    ","copy contents of one file to another or only a tag")
+        print("\t -diff    ","difference of two data items in two ebf files")
+        print("\t -rename  ","rename a data item")
+        print("\t -remove  ","remove a data item. It is renamed with prefix /.tr/ ")
+        print("\t          ","which can be restored using rename if needed")
+        print("\t -htab    ","get information about internal hashtable")
+        print("CONTACT:")
+        print("http://ebfformat.sourceforge.net")
     
 
 
@@ -3417,7 +3417,7 @@ import unittest
 class _ebf_test(unittest.TestCase):
     
     def setUp(self):
-        self.seq = range(10)
+        self.seq = list(range(10))
         
 #    def test_expand(self):
 #        x1=numpy.zeros(10)        
@@ -3425,35 +3425,35 @@ class _ebf_test(unittest.TestCase):
         
         
     def test_ebfht(self):        
-        print 'Testing ebftable get, put and remove-->'        
+        print('Testing ebftable get, put and remove-->')        
         _EbfTable.init('check.txt')
         nsize=100
         
         start = time.time()    
         for i in numpy.arange(0, nsize):
             _EbfTable.put('check.txt','/x'+str(i),i*10)
-        print 'Writing  ', nsize*1e-3/(time.time()-start), ' Kops' 
+        print('Writing  ', nsize*1e-3/(time.time()-start), ' Kops') 
                 
         start = time.time()    
         x=numpy.zeros(nsize)
         for i in numpy.arange(0, nsize):
             x[i]=_EbfTable.get('check.txt','/x'+str(i))
-        print 'Reading  ', nsize*1e-3/(time.time()-start), ' Kops' 
+        print('Reading  ', nsize*1e-3/(time.time()-start), ' Kops') 
         
         status1=1
         for i in numpy.arange(0, nsize):
             if x[i] != i*10:
                 status1=0
-                print i,x[i]
+                print(i,x[i])
                 
-        self.assertEquals(status1, 1)
+        self.assertEqual(status1, 1)
         
         
         start = time.time()    
         x=numpy.zeros(nsize)
         for i in numpy.arange(0, nsize/2):
             _EbfTable.remove('check.txt','/x'+str(i))
-        print 'Removing ', nsize*1e-3/(time.time()-start), ' Kops' 
+        print('Removing ', nsize*1e-3/(time.time()-start), ' Kops') 
         
         for i in numpy.arange(0, nsize):
             x[i]=_EbfTable.get('check.txt','/x'+str(i))
@@ -3467,7 +3467,7 @@ class _ebf_test(unittest.TestCase):
                 status2=0
         
         
-        self.assertEquals(status2, 1)
+        self.assertEqual(status2, 1)
         
 #        start = time.time()    
 #        keys=_EbfTable.getKeyValsIT('check.txt')[0]
@@ -3484,22 +3484,22 @@ class _ebf_test(unittest.TestCase):
         
         
     def test_header256(self):
-        print "Testing header256-->"
+        print("Testing header256-->")
         ebfdir='data/'
         data=read(ebfdir+'header256.ebf','/')
         x=data["xvar"]
         y=data["yvar"]
         z=numpy.arange(0,10)
-        self.assertEquals(x.size,z.size)
-        self.assertEquals(y.size,z.size)
-        self.assertEquals(numpy.sum(x==z),x.size)
-        self.assertEquals(numpy.sum((y-10)==z),x.size)
+        self.assertEqual(x.size,z.size)
+        self.assertEqual(y.size,z.size)
+        self.assertEqual(numpy.sum(x==z),x.size)
+        self.assertEqual(numpy.sum((y-10)==z),x.size)
         
         
         
     def testtable(self):
         """ Check rename """
-        print "Testing ebftable-->"
+        print("Testing ebftable-->")
         x = numpy.arange(-65636, -65636-128,-1, dtype = "int64")
         write("check_table.ebf", "/x1", x, "w")      
         write("check_table.ebf", "/x2", x, "a")      
@@ -3508,8 +3508,8 @@ class _ebf_test(unittest.TestCase):
         rename("check_table.ebf","/x2",'')
         y1=read('check_table.ebf','/x5')
         y2=read('check_table.ebf','/.tr/x2.0')
-        self.assertEquals(numpy.sum(x ==y1),x.size)
-        self.assertEquals(numpy.sum(x ==y2),x.size)
+        self.assertEqual(numpy.sum(x ==y1),x.size)
+        self.assertEqual(numpy.sum(x ==y2),x.size)
         
         swapEndian('check_table.ebf')
         write("check_table_swap.ebf", "/x6", x, "a")      
@@ -3519,39 +3519,39 @@ class _ebf_test(unittest.TestCase):
         y3=read('check_table_swap.ebf','/x6')
         y4=read('check_table_swap.ebf','/x7')
 #        info('check_table_swap.ebf')
-        self.assertEquals(numpy.sum(x ==y1),x.size)
-        self.assertEquals(numpy.sum(x ==y2),x.size)
-        self.assertEquals(numpy.sum(x ==y3),x.size)
-        self.assertEquals(numpy.sum(x ==y4),x.size)
+        self.assertEqual(numpy.sum(x ==y1),x.size)
+        self.assertEqual(numpy.sum(x ==y2),x.size)
+        self.assertEqual(numpy.sum(x ==y3),x.size)
+        self.assertEqual(numpy.sum(x ==y4),x.size)
         
         
     def teststring(self):
         """ Check string read write """
-        print "Testing string read/write-->"
+        print("Testing string read/write-->")
         x = "ebcdefgh"
         write("check.ebf", "/mystr", numpy.array(x), "w")      
         y = read("check.ebf", "/mystr").tostring()
-        self.assertEquals(x, y)
+        self.assertEqual(x, y)
         x = numpy.array(['aa','ba','ca','da'])
         write("check.ebf", "/mystr", x, "w")      
         y = read("check.ebf", "/mystr")
-        self.assertEquals(numpy.all(x==y),True)
+        self.assertEqual(numpy.all(x==y),True)
         
         x = numpy.array(['a','b','c','d'])
         write("check.ebf", "/mystr", x, "w")      
         y = read("check.ebf", "/mystr")
-        self.assertEquals(numpy.all(x==y),True)
+        self.assertEqual(numpy.all(x==y),True)
         
         
     def testdataunit(self):
         """ Check data units read write"""
-        print "Testing data unit-->"
+        print("Testing data unit-->")
         write('check.ebf', '/data', numpy.zeros(1, dtype = "int32"), "w", dataunit = "100 m/s")
-        self.assertEquals("100 m/s", unit('check.ebf', '/data'))
+        self.assertEqual("100 m/s", unit('check.ebf', '/data'))
         
     def testexceptions(self):
         """ Check overwrite protection, write in between and then check """
-        print "Testing exceptions-->"
+        print("Testing exceptions-->")
         x = numpy.zeros(10, dtype = 'int32')
         write('check.ebf', '/x', x, "w")
         write('check1.ebf', '/x', x, "w")
@@ -3560,7 +3560,7 @@ class _ebf_test(unittest.TestCase):
         self.assertRaises(IOError, read, 'check123.ebf', '/x1')
         
     def testchecksum(self):
-        print "Testing checksum-->"
+        print("Testing checksum-->")
         nsize=10
         x1=numpy.zeros(nsize,dtype='float32')
         x2=numpy.zeros(nsize,dtype='float64')
@@ -3570,41 +3570,41 @@ class _ebf_test(unittest.TestCase):
         write("check.ebf","/single/x2",x2[0:1],"a")
         checksum=read("check.ebf",'/.ebf/info')
 #        info("check.ebf")
-        print checksum;
-        print "(EBF, 0)    hash=",_EbfTable.ebfckhash("(EBF, 0) ",0)
-        print "(EBF, 1000) hash=",_EbfTable.ebfckhash("(EBF, 1000)",1000)
+        print(checksum);
+        print("(EBF, 0)    hash=",_EbfTable.ebfckhash("(EBF, 0) ",0))
+        print("(EBF, 1000) hash=",_EbfTable.ebfckhash("(EBF, 1000)",1000))
 
     def testmultiple(self):
         """ Check overwrite protection, write in between and then check """
-        print "Testing mutiple read write-->"
+        print("Testing mutiple read write-->")
         x = numpy.zeros(10, dtype = 'int32')
         write('check1.ebf', '/x1', x, "w")
         write('check1.ebf', '/x2', x, "a")
         write('check2.ebf', '/x1', x, "w")
         y = read('check2.ebf', '/x1')
-        self.assertEquals(y.size, x.size)
+        self.assertEqual(y.size, x.size)
         write('check2.ebf', '/x2', x, "a")
         y = read('check2.ebf', '/x1')
-        self.assertEquals(y.size, x.size)
+        self.assertEqual(y.size, x.size)
         write('check1.ebf', '/y1', x, "w")
         y = read('check2.ebf', '/x1')
-        self.assertEquals(y.size, x.size)
+        self.assertEqual(y.size, x.size)
         write('check1.ebf', '/y2', x, "a")        
         y = read('check2.ebf', '/x1')
-        self.assertEquals(y.size, x.size)
+        self.assertEqual(y.size, x.size)
         write('check2.ebf', '/x1', x, "w")
         y = read('check2.ebf', '/x1')
-        self.assertEquals(y.size, x.size)
+        self.assertEqual(y.size, x.size)
         write('check2.ebf', '/x2', x, "a")
         y1 = read('check2.ebf', '/x1')
         x1 = read('check1.ebf', '/y1')
-        self.assertEquals(numpy.sum(x == x1), x.size)
-        self.assertEquals(numpy.sum(x == y1), x.size)
+        self.assertEqual(numpy.sum(x == x1), x.size)
+        self.assertEqual(numpy.sum(x == y1), x.size)
         self.assertRaises(RuntimeError, read, 'check1.ebf', '/x1')
         
     def write_master(self):
         # make sure the shuffled sequence does not lose any elements
-        print "write master test file-->"
+        print("write master test file-->")
         data = {}
         keys = ["x1", "x2", "x3", "x4", "x5", "x6", "x9", "x10", "x11", "x12", "x13"]
         x=numpy.arange(0,128,dtype='int8')
@@ -3681,7 +3681,7 @@ class _ebf_test(unittest.TestCase):
         write(ebfdir+'master_test1.ebf', '/dir1/data_struct_rec', data3, 'a')    
         write(ebfdir+'master_test1.ebf', '/dir1/data_struct_rec2', data5, 'a')    
         swapEndian(ebfdir+'master_test1.ebf')
-        self.assertEquals(1, 1)
+        self.assertEqual(1, 1)
         
         
             
@@ -3689,7 +3689,7 @@ class _ebf_test(unittest.TestCase):
 
     def test_read_masterfile(self):
         # make sure the shuffled sequence does not lose any elements
-        print "Testing read masterfile-->"
+        print("Testing read masterfile-->")
         data = {}
         keys = ["x1", "x2", "x3", "x4", "x5", "x6", "x9", "x10", "x11", "x12", "x13"]
         x=numpy.arange(0,128,dtype='int8')
@@ -3736,45 +3736,45 @@ class _ebf_test(unittest.TestCase):
         
                      
         datar1 = read(filename1, "/")
-        for key in data1.keys():
-            self.assertEquals(numpy.sum(datar1[key] == data1[key]), data1[key].size)
+        for key in list(data1.keys()):
+            self.assertEqual(numpy.sum(datar1[key] == data1[key]), data1[key].size)
 
         
         datar2 = read(filename1, "/dir1/data_struct_rec")[0]
         datar3 = read(filename1, "/dir1/data_struct_rec2")[0]        
         datar4 = read(filename1, "/dir1/data_struct")[1]
         for key in ['x2','x3']:
-            self.assertEquals(numpy.sum(datar4[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar2[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar2['point1'][1][key] == data[key]), data[key].size)
-            self.assertEquals(datar2[key].shape, data[key].shape)
-            self.assertEquals(datar2['point1'][1][key].shape, data[key].shape)
-            self.assertEquals(datar3['point2'][0][key].shape, data[key].shape)
-            self.assertEquals(datar4[key].shape, data[key].shape)
-            self.assertEquals(numpy.sum(datar3['point2']['point1'][key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar4[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar2[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar2['point1'][1][key] == data[key]), data[key].size)
+            self.assertEqual(datar2[key].shape, data[key].shape)
+            self.assertEqual(datar2['point1'][1][key].shape, data[key].shape)
+            self.assertEqual(datar3['point2'][0][key].shape, data[key].shape)
+            self.assertEqual(datar4[key].shape, data[key].shape)
+            self.assertEqual(numpy.sum(datar3['point2']['point1'][key] == data[key]), data[key].size)
 
             
         datar1 = read(filename2, "/")
-        for key in data1.keys():
-            self.assertEquals(numpy.sum(datar1[key] == data1[key]), data1[key].size)
+        for key in list(data1.keys()):
+            self.assertEqual(numpy.sum(datar1[key] == data1[key]), data1[key].size)
         datar2 = read(filename2, "/dir1/data_struct_rec")[0]
         datar3 = read(filename2, "/dir1/data_struct_rec2")[0]        
         datar4 = read(filename1, "/dir1/data_struct")[1]
         for key in ['x2','x3']:
-            self.assertEquals(numpy.sum(datar4[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar2[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar2['point1'][1][key] == data[key]), data[key].size)
-            self.assertEquals(datar2[key].shape, data[key].shape)
-            self.assertEquals(datar2['point1'][1][key].shape, data[key].shape)
-            self.assertEquals(datar3['point2'][0][key].shape, data[key].shape)
-            self.assertEquals(datar4[key].shape, data[key].shape)
-            self.assertEquals(numpy.sum(datar3['point2']['point1'][key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar4[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar2[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar2['point1'][1][key] == data[key]), data[key].size)
+            self.assertEqual(datar2[key].shape, data[key].shape)
+            self.assertEqual(datar2['point1'][1][key].shape, data[key].shape)
+            self.assertEqual(datar3['point2'][0][key].shape, data[key].shape)
+            self.assertEqual(datar4[key].shape, data[key].shape)
+            self.assertEqual(numpy.sum(datar3['point2']['point1'][key] == data[key]), data[key].size)
         
         
 
     def testcorrectness1(self):
         # make sure the shuffled sequence does not lose any elements
-        print "Testing correctness ver-1 of read write-->"
+        print("Testing correctness ver-1 of read write-->")
         data = {}
         keys = ["x1", "x2", "x3", "x4", "x5", "x6", "x9", "x10", "x11", "x12", "x13"]
         data["x1"]  =  numpy.array(['EBF','EBFGH'])
@@ -3841,7 +3841,7 @@ class _ebf_test(unittest.TestCase):
         data1 = read("check.ebf", "/")
         data3 = read("check.ebf", "/struct1/data2")[0]
         data33 = read("check.ebf", "/struct2/data22")
-        self.assertEquals(len(data), len(data1))        
+        self.assertEqual(len(data), len(data1))        
         for key in keys:
             x1 = read("check.ebf", "/"+key)            
             x2 = read("check.ebf", "/dir1/"+key)            
@@ -3850,28 +3850,28 @@ class _ebf_test(unittest.TestCase):
             x5 = read("check.ebf", "/dir4/"+key)            
             x5 = read("check.ebf", "/dir5/"+key)
 #            print 'here',key,x1.dtype,data[key].dtype            
-            self.assertEquals(numpy.sum(x1 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x2 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x3 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x4 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x5 == data[key]), data[key].size)
-            self.assertEquals(x1.shape, data[key].shape)
-            self.assertEquals(x2.shape, data[key].shape)
-            self.assertEquals(x3.shape, data[key].shape)
-            self.assertEquals(x4.shape, data[key].shape)
-            self.assertEquals(numpy.sum(data1[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(data3[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(data33['point1'][1][key] == data[key]), data[key].size)
-            self.assertEquals(data1[key].shape, data[key].shape)
-            self.assertEquals(data3[key].shape, data[key].shape)
-            self.assertEquals(data33['point1'][1][key].shape, data[key].shape)
+            self.assertEqual(numpy.sum(x1 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x2 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x3 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x4 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x5 == data[key]), data[key].size)
+            self.assertEqual(x1.shape, data[key].shape)
+            self.assertEqual(x2.shape, data[key].shape)
+            self.assertEqual(x3.shape, data[key].shape)
+            self.assertEqual(x4.shape, data[key].shape)
+            self.assertEqual(numpy.sum(data1[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(data3[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(data33['point1'][1][key] == data[key]), data[key].size)
+            self.assertEqual(data1[key].shape, data[key].shape)
+            self.assertEqual(data3[key].shape, data[key].shape)
+            self.assertEqual(data33['point1'][1][key].shape, data[key].shape)
         swapEndian("check.ebf")    
 #        info('check.ebf')
         
         data1 = read("check_swap.ebf", "/")
         data3 = read("check_swap.ebf", "/struct1/data2")[0]
         data33 = read("check_swap.ebf", "/struct2/data22")
-        self.assertEquals(len(data), len(data1))        
+        self.assertEqual(len(data), len(data1))        
 #        info('check.ebf')
 #        info('check_swap.ebf')
         for key in keys:
@@ -3882,26 +3882,26 @@ class _ebf_test(unittest.TestCase):
             x4 = read("check_swap.ebf", "/dir3/"+key)            
             x5 = read("check_swap.ebf", "/dir4/"+key)            
             x5 = read("check_swap.ebf", "/dir5/"+key)            
-            self.assertEquals(numpy.sum(x1 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x2 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x3 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x4 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(x5 == data[key]), data[key].size)
-            self.assertEquals(x1.shape, data[key].shape)
-            self.assertEquals(x2.shape, data[key].shape)
-            self.assertEquals(x3.shape, data[key].shape)
-            self.assertEquals(x4.shape, data[key].shape)
-            self.assertEquals(numpy.sum(data1[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(data3[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(data33['point1'][1][key] == data[key]), data[key].size)
-            self.assertEquals(data1[key].shape, data[key].shape)
-            self.assertEquals(data3[key].shape, data[key].shape)
-            self.assertEquals(data33['point1'][1][key].shape, data[key].shape)
+            self.assertEqual(numpy.sum(x1 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x2 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x3 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x4 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(x5 == data[key]), data[key].size)
+            self.assertEqual(x1.shape, data[key].shape)
+            self.assertEqual(x2.shape, data[key].shape)
+            self.assertEqual(x3.shape, data[key].shape)
+            self.assertEqual(x4.shape, data[key].shape)
+            self.assertEqual(numpy.sum(data1[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(data3[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(data33['point1'][1][key] == data[key]), data[key].size)
+            self.assertEqual(data1[key].shape, data[key].shape)
+            self.assertEqual(data3[key].shape, data[key].shape)
+            self.assertEqual(data33['point1'][1][key].shape, data[key].shape)
 
 
     def test_correctness2(self):
         # make sure the shuffled sequence does not lose any elements
-        print "Testing correctness ver-2 of read write-->"
+        print("Testing correctness ver-2 of read write-->")
         data = {}
         keys = ["x1", "x2", "x3", "x4", "x5", "x6", "x9", "x10", "x11", "x12", "x13"]
         x=numpy.arange(0,128,dtype='int8')
@@ -3988,15 +3988,15 @@ class _ebf_test(unittest.TestCase):
         datar1 = read("check.ebf", "/")
         datar2 = read("check.ebf", "/struct_split/")
         temp = read("check.ebf", "/dir1/struct")
-        self.assertEquals(temp.size, data2.size)
+        self.assertEqual(temp.size, data2.size)
         datar3=temp[0]
         datar4=temp[1]
         datar5 = read("check.ebf", "/dir1/struct_rec_split/",recon=1)
         datar6=datar5['point1']
         datar7 = read("check.ebf", "/dir1/struct_single")
-        self.assertEquals(datar7.size, 1)
+        self.assertEqual(datar7.size, 1)
         datar8 = read("check.ebf", "/dir1/struct_rec")
-        self.assertEquals(datar8.size, 1)
+        self.assertEqual(datar8.size, 1)
         datar9 = datar8['point1'][1]
 #        datar5=datar5[0]['point1'][1]
         datar10 = read("check.ebf", "/dir1/struct_rec2")
@@ -4004,38 +4004,38 @@ class _ebf_test(unittest.TestCase):
         
         for key in data2[0].dtype.names:
             x1 = read("check.ebf", "/struct_split/"+key)            
-            self.assertEquals(numpy.sum(x1 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar2[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar3[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar4[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar5[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar6[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar7[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar8[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar9[key] == data[key]), data[key].size)
-            self.assertEquals(x1.shape, data[key].shape)
-            self.assertEquals(datar2[key].shape, data[key].shape)
-            self.assertEquals(datar3[key].shape, data[key].shape)
-            self.assertEquals(datar4[key].shape, data[key].shape)
-            self.assertEquals(datar5[key].shape, data[key].shape)
-            self.assertEquals(datar6[key].shape, data[key].shape)
-            self.assertEquals(datar7[key].shape, data[key].shape)
-            self.assertEquals(datar8[key].shape, data[key].shape)
-            self.assertEquals(datar9[key].shape, data[key].shape)
-            self.assertEquals(datar11[key].shape, data[key].shape)
+            self.assertEqual(numpy.sum(x1 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar2[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar3[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar4[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar5[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar6[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar7[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar8[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar9[key] == data[key]), data[key].size)
+            self.assertEqual(x1.shape, data[key].shape)
+            self.assertEqual(datar2[key].shape, data[key].shape)
+            self.assertEqual(datar3[key].shape, data[key].shape)
+            self.assertEqual(datar4[key].shape, data[key].shape)
+            self.assertEqual(datar5[key].shape, data[key].shape)
+            self.assertEqual(datar6[key].shape, data[key].shape)
+            self.assertEqual(datar7[key].shape, data[key].shape)
+            self.assertEqual(datar8[key].shape, data[key].shape)
+            self.assertEqual(datar9[key].shape, data[key].shape)
+            self.assertEqual(datar11[key].shape, data[key].shape)
 
-        for key in data.keys():
+        for key in list(data.keys()):
             x1 = read("check.ebf", "/"+key)
 #            print key, data[key].shape, x1.shape,x1.dtype            
-            self.assertEquals(numpy.sum(x1 == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar1[key] == data[key]), data[key].size)
-            self.assertEquals(datar1[key].shape, data[key].shape)
-            self.assertEquals(x1.shape, data[key].shape)
+            self.assertEqual(numpy.sum(x1 == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar1[key] == data[key]), data[key].size)
+            self.assertEqual(datar1[key].shape, data[key].shape)
+            self.assertEqual(x1.shape, data[key].shape)
 
 
     def test_correctness3(self):
         # make sure the shuffled sequence does not lose any elements
-        print "Testing correctness ver-3 of read write-->"
+        print("Testing correctness ver-3 of read write-->")
         data = {}
         data["x2"] = numpy.arange(-65636, -65636-128,-1, dtype = "int32")
         data["x3"] = numpy.arange(-4294967296, -4294967296-128,-1, dtype = "int64")
@@ -4047,12 +4047,12 @@ class _ebf_test(unittest.TestCase):
         
         datar = read("check.ebf", "/",recon=2)
         
-        for key in data.keys():
-            self.assertEquals(numpy.sum(datar[key] == data[key]), data[key].size)
-            self.assertEquals(numpy.sum(datar['rec']['rec1'][key] == data[key]), data[key].size)
+        for key in list(data.keys()):
+            self.assertEqual(numpy.sum(datar[key] == data[key]), data[key].size)
+            self.assertEqual(numpy.sum(datar['rec']['rec1'][key] == data[key]), data[key].size)
         
     def test_readpart(self):
-        print "Testing partial read -->"
+        print("Testing partial read -->")
         x=numpy.linspace(0,99,100)
         write("check.ebf", "/x", x, "w")
         y1 = read("check.ebf", "/x",begin=0)
@@ -4072,7 +4072,7 @@ class _ebf_test(unittest.TestCase):
         self.assertTrue(numpy.all(y1==x[0:-1,:,:]))
         
     def test_iterate(self):
-        print "Testing iterate -->"
+        print("Testing iterate -->")
         x=numpy.linspace(0,99,100)
         write("check.ebf", "/x", x, "w")
         
@@ -4105,7 +4105,7 @@ class _ebf_test(unittest.TestCase):
                 end=100
                       
     def test_ebffile(self):
-        print "Testing ebffile -->"
+        print("Testing ebffile -->")
         dt=[('x','float64'),('y','float64')]
         data=numpy.zeros(100,dtype=dt)
         data['x']=numpy.linspace(0,99,100)
@@ -4116,7 +4116,7 @@ class _ebf_test(unittest.TestCase):
         self.assertTrue(numpy.all(data1['y']==data['y']))
         
     def test_structunits(self):
-        print "Testing ebffile -->"
+        print("Testing ebffile -->")
         dt=[('x','float64',(2,)),('y','float64',(5,))]
         data=numpy.zeros(100,dtype=dt)
         write("check.ebf", "/data", data, "w",dataunit='')
@@ -4131,11 +4131,11 @@ class _ebf_test(unittest.TestCase):
         write("check.ebf", "/data", data, "w",dataunit=units1)
 #        info("check.ebf",1)
         units2=unit("check.ebf", "/data")
-        print 'printing ',units2
+        print('printing ',units2)
         self.assertTrue(numpy.all(units1==units2))
         
     def test_read_ind(self):
-        print "Testing read_ind -->"
+        print("Testing read_ind -->")
         dt=[('x','float64'),('y','float64')]
         nsize=100
         data=numpy.zeros(nsize,dtype=dt)
@@ -4147,7 +4147,7 @@ class _ebf_test(unittest.TestCase):
         self.assertTrue(numpy.all(data['x'][ind]==data1['x']))
         self.assertTrue(numpy.all(data['y'][ind]==data1['y']))
         data1=read_ind('check.ebf','/data',1)
-        print type(data1),hasattr(data1,'__len__')
+        print(type(data1),hasattr(data1,'__len__'))
         self.assertTrue(numpy.all(type(data1)==numpy.void))
         
         write('check.ebf','/data',numpy.array([]),'w')
@@ -4204,7 +4204,7 @@ class _ebf_test(unittest.TestCase):
         self.assertTrue(numpy.all(datar[nsize]==data[0]))
         
     def test_update_ind(self):
-        print "Testing update_ind -->"
+        print("Testing update_ind -->")
         dt=[('x','float64'),('y','float64'),('z','S10')]
         nsize=100
 
@@ -4270,7 +4270,7 @@ class _ebf_test(unittest.TestCase):
         self.assertTrue(x==20)
 
     def test_dict2npstruct(self):
-        print "Testing dict2npstruct and npstruct2dict -->"
+        print("Testing dict2npstruct and npstruct2dict -->")
         dt=[('x','float64'),('y','float64'),('z','S10')]
         nsize=100
         data1=numpy.zeros(nsize,dtype=dt)
@@ -4299,7 +4299,7 @@ class _ebf_test(unittest.TestCase):
         self.assertTrue('z' in data3.dtype.names)
 
     def test_copy(self):
-        print "Testing copy -->"
+        print("Testing copy -->")
         dt=[('x','float64'),('y','float64'),('z','S10')]
         nsize=100
         data1=numpy.zeros(nsize,dtype=dt)
@@ -4419,7 +4419,7 @@ if __name__  ==  '__main__':
                 if '*' in sys.argv[2]:
                     filelist=glob(sys.argv[2])
                     filelist.sort()
-                    print filelist
+                    print(filelist)
                     join(filelist,'/',sys.argv[3],'/',sys.argv[4])
                 else:
                     join(sys.argv[2],'/',sys.argv[3],'/',sys.argv[4])
