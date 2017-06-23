@@ -391,7 +391,7 @@ class _EbfMap(object):
         elif option == 1:    
             if _EbfMap.ltable[filename]['checksum'] != _EbfMap.getCheckSum(filename):
                 _EbfMap.__loadMap(filename)
-
+        #1/0
         if dataname in _EbfMap.ltable[filename]:
             return _EbfMap.ltable[filename][dataname]
         else:
@@ -583,7 +583,7 @@ class _EbfHeader:
         sig = numpy.fromstring(fp1.read(6), dtype = 'int8')
         self.name = numpy.fromstring(fp1.read(100), dtype = 'S100')[0]
         self.name=self.name.replace('\x00',' ')
-        self.name=self.name.strip().lower()
+        self.name=self.name.strip().lower().decode('ascii')
         
         unused = numpy.fromstring(fp1.read(2), dtype = 'int8')
         unused = numpy.fromstring(fp1.read(36), dtype = 'S1')
@@ -666,14 +666,14 @@ class _EbfHeader:
 #            self.dim=numpy.zeros(0,'int64')
             
         self.name = numpy.fromstring(fp1.read(namesize), dtype = 'S1').tostring()
-        self.name=self.name.lower()
+        self.name=self.name.lower().decode('ascii')
         self.dataunit = ""
         if unitsize > 0:
-            self.dataunit = numpy.fromstring(fp1.read(unitsize), dtype = 'S1').tostring()
+            self.dataunit = numpy.fromstring(fp1.read(unitsize), dtype = 'S1').tostring().decode('ascii')
             
         self.sdef = ""
         if sdefsize > 0:
-            self.sdef = numpy.fromstring(fp1.read(sdefsize), dtype = 'S1').tostring()
+            self.sdef = numpy.fromstring(fp1.read(sdefsize), dtype = 'S1').tostring().decode('ascii')
 
 
         self.datapos = self.headerpos+self.headersize    
@@ -771,13 +771,13 @@ class _EbfHeader:
             temp+=self.headersize.byteswap().tostring('C')+namesize.byteswap().tostring('C')+self.datatype.byteswap().tostring('C')
             temp+=self.datasize.byteswap().tostring('C')+rank.byteswap().tostring('C')+unitsize.byteswap().tostring('C')+sdefsize.byteswap().tostring('C')
             temp+=self.flags.tostring('C')+self.capacity_.byteswap().tostring('C')+self.dim.byteswap().tostring('C')
-            temp+=self.name+self.dataunit+self.sdef
+            temp+=self.name.encode('ascii')+self.dataunit.encode('ascii')+self.sdef.encode('ascii')
         else:
             temp=sig.tostring('C')+version.tostring('C')+self.endiantest.tostring('C')
             temp+=self.headersize.tostring('C')+namesize.tostring('C')+self.datatype.tostring('C')
             temp+=self.datasize.tostring('C')+rank.tostring('C')+unitsize.tostring('C')+sdefsize.tostring('C')
             temp+=self.flags.tostring('C')+self.capacity_.tostring('C')+self.dim.tostring('C')
-            temp+=self.name+self.dataunit+self.sdef
+            temp+=self.name.encode('ascii')+self.dataunit.encode('ascii')+self.sdef.encode('ascii')
         
         
         extra = self.headersize-len(temp)
@@ -965,11 +965,11 @@ class _EbfTable(object):
     
     def __read_key(self,item):
         self.fp1.seek(self.data[2]+self.header['keypos']+item['keyloc'],0)
-        return self.fp1.read(item['keysize'])
+        return self.fp1.read(item['keysize']).decode('ascii')
     
     def __write_key(self,item,key):
         self.fp1.seek(self.data[2]+self.header['keypos']+item['keyloc'],0)
-        self.fp1.write(key)
+        self.fp1.write(key.encode('ascii'))
         
     def __read_header(self):
         if (self.data[1]>0)and(self.data[2]>0)and(self.data[3]==1):
@@ -1081,7 +1081,7 @@ class _EbfTable(object):
         if self.ecode != 0:
             self.close()
             raise RuntimeError('EBF error: __expand,  htable is closed')
-        else:            
+        else:
             values1[keys1.index('/.ebf/htable')]=self.data[1]            
             for key1,value1 in zip(keys1,values1):    
                 self.__add(key1,value1)                
@@ -1124,7 +1124,7 @@ class _EbfTable(object):
         location=-1
         if self.ecode == 0:                
             keyhash=_EbfTable.ebflthash(key,self.header['htcapacity'])
-            loc1=self.__read_hvalue(keyhash)            
+            loc1=self.__read_hvalue(keyhash)   
             if loc1 != 0:
                 item1=self.__read_node(loc1)
                 while (self.__read_key(item1) != key) and (item1['next'] != -1):
@@ -1460,8 +1460,8 @@ class _EbfTable(object):
         fileht=_EbfTable(filename,"rb")
         if (fileht.fp1.closed == True):
             raise RuntimeError('Ebf error: cannot open file- '+filename)
-        
         location=fileht.__getfromfp(key)                                                            
+
         fileht.close()
         return location
             
@@ -2102,7 +2102,7 @@ def read(filename, path = '/' ,recon=0,ckon=1,begin=0,end=None):
                     print('ebf Warning, begin>end')
                     end1=begin1
                 if begin1 > 0:
-                    fp1.seek(begin1*header.datasize*header.elements()/header.dim[0],1) 
+                    fp1.seek(begin1*header.datasize*header.elements()//header.dim[0],1) 
                 if (end1-begin1) != header.dim[0]:
                     header.dim[0]=end1-begin1
                     
@@ -2125,7 +2125,6 @@ def read(filename, path = '/' ,recon=0,ckon=1,begin=0,end=None):
             x = x.reshape(header.getshape())
             fp1.close()
             return x
-
     if (path.endswith('/') == 1):
         location=_EbfMap.get(filename, path.lower(),ckon)
         node=_EbfUtils.searchPathTree(_EbfMap.ltable[filename]['pathtree'],path.lower())
@@ -2505,7 +2504,6 @@ def update_ind(filename,dataname,data,ind=None):
                 nsize=shape[0]
             
                 
-    #        print 'info=',dth1,header.datasize,header.datatype
             if header.flagswap==1:
                 if sorder=='<':
                     sorder='>'
@@ -3717,7 +3715,7 @@ class _ebf_test(unittest.TestCase):
 
         for key in keys:
             if key != 'x1':
-                newsize = data[key].size/4
+                newsize = data[key].size//4
                 data[key] = data[key].reshape(4, newsize)        
 
 
@@ -3791,7 +3789,7 @@ class _ebf_test(unittest.TestCase):
                 
         for key in keys:
             if key != "x1":
-                newsize = data[key].size/4
+                newsize = data[key].size//4
                 data[key] = data[key].reshape(4, newsize)
                         
                 
@@ -3919,7 +3917,7 @@ class _ebf_test(unittest.TestCase):
         data["x13"] = numpy.arange(4294967296, 4294967296 + 128, dtype = 'uint64')
         for key in keys:
             if key != 'x1':
-                newsize = data[key].size/4
+                newsize = data[key].size//4
                 data[key] = data[key].reshape(4, newsize)
                 
         
